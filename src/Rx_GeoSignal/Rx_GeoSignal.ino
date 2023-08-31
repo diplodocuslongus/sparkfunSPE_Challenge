@@ -105,7 +105,6 @@ void cbLinkChange(void *pCBParam, uint32_t Event, void *pArg)
 //      lcd.print("Connected!\r\n");
         
         strncpy(display_text, "\r\nConnected", 99);
-        
     }
     else
     {
@@ -118,7 +117,7 @@ void cbLinkChange(void *pCBParam, uint32_t Event, void *pArg)
 
 void setup() 
 {
-    adi_eth_Result_e        result;
+    adi_eth_Result_e        resultSPE;
     uint32_t                error;
     adin1110_DeviceStruct_t dev;
     adin1110_DeviceHandle_t hDevice = &dev;
@@ -130,24 +129,24 @@ void setup()
     
     Serial.begin(115200);
     while (!Serial) {
-      ; // wait for serial port to connect. Needed for native USB port only
+      ; // wait for serial port to connect. 
     }
     /****** System Init *****/
-        result = adin1110.begin();
-    if(result != ADI_ETH_SUCCESS) Serial.println("No MACPHY device found");
+    resultSPE = adin1110.begin();
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("No MACPHY device found");
     else Serial.println("Rx Adin1110 found!");
 
-    result = adin1110.addAddressFilter(&macAddr[0][0], NULL, 0);
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
+    resultSPE = adin1110.addAddressFilter(&macAddr[0][0], NULL, 0);
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
 
-    result = adin1110.addAddressFilter(&macAddr[1][0], NULL, 0);
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
+    resultSPE = adin1110.addAddressFilter(&macAddr[1][0], NULL, 0);
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
 
-    result = adin1110.syncConfig();
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_SyncConfig");
+    resultSPE = adin1110.syncConfig();
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_SyncConfig");
 
-    result = adin1110.registerCallback(cbLinkChange, ADI_MAC_EVT_LINK_CHANGE);
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_RegisterCallback (ADI_MAC_EVT_LINK_CHANGE)");
+    resultSPE = adin1110.registerCallback(cbLinkChange, ADI_MAC_EVT_LINK_CHANGE);
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_RegisterCallback (ADI_MAC_EVT_LINK_CHANGE)");
 
     /* Prepare Tx/Rx buffers */
     for (uint32_t i = 0; i < BUFF_DESC_COUNT; i++)
@@ -157,11 +156,11 @@ void setup()
         rxBufDesc[i].bufSize = MAX_FRAME_BUF_SIZE;
         rxBufDesc[i].cbFunc = rxCallback;
         
-        result = adin1110.submitRxBuffer(&rxBufDesc[i]);
+        resultSPE = adin1110.submitRxBuffer(&rxBufDesc[i]);
     }
 
-    result = adin1110.enable();
-    if(result != ADI_ETH_SUCCESS) Serial.println("Device enable error");
+    resultSPE = adin1110.enable();
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("Device enable error");
 
     /* Wait for link to be established */
     lcd.print("Waiting for connection...");
@@ -179,47 +178,23 @@ void setup()
 }
 
 void loop() {
-     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-     /*
-     lcd.setCursor(0, 0);
-  // print from 0 to 9:
-  for (int thisChar = 0; thisChar < 10; thisChar++) {
-    lcd.print(thisChar);
-    delay(500);
-  }
-
-  // set the cursor to (16,1):
-  lcd.setCursor(16, 1);
-  // set the display to automatically scroll:
-  lcd.autoscroll();
-  // print from 0 to 9:
-  for (int thisChar = 0; thisChar < 10; thisChar++) {
-    lcd.print(thisChar);
-    delay(500);
-  }
-  // turn off automatic scrolling
-  lcd.noAutoscroll();
-
-  // clear screen for the next loop:
-  lcd.clear();
-  */
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   
-     if(display_updated)
-     {
+    if(display_updated)
+    {
         lcd.clear();
         int n = 0;
         int output_size = strnlen(display_text, MAX_FRAME_BUF_SIZE);
         const int chunk_size = 16;
         lcd.clear();
         while(output_size>chunk_size){
-          lcd.write((uint8_t *)&display_text[n], chunk_size);
-          output_size -= chunk_size;
-          n += chunk_size;
-        }
-        lcd.write((uint8_t *)&display_text[n], output_size);
-       display_updated = false;
-     }
+            lcd.write((uint8_t *)&display_text[n], chunk_size);
+            output_size -= chunk_size;
+            n += chunk_size;
+         }
+         lcd.write((uint8_t *)&display_text[n], output_size);
+         display_updated = false;
+    }
     Serial.println(display_text);
-  
-     delay(5);
+    delay(5);
 }

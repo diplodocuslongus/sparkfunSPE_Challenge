@@ -85,6 +85,7 @@ bool txBufAvailable[BUFF_DESC_COUNT];
 /* geophone signal parameters */
 float maxamplitude = 0.0; // max wave amplitude, as voltage from ADC
 float reported_maxamplitude = 0.0; // max amplitude of vibration/wave/shock
+float bkground_level = 0.3; // needs to be fine tuned (background level of abs of geophone signal, in mV)
 float reported_wvfreq; // for future use (wave frequency)
 unsigned long last_report;
 unsigned long last_toggle;
@@ -298,11 +299,12 @@ void loop() {
     int amplitude_dec = ( (int)((abs)(amplitude)*100) ) % 100;
     int wvfreq_dec = ( (int)(wvfreq*100) ) % 100;
     Serial.print("Amp:");
-    Serial.print((int)amplitude);
-    Serial.println(amplitude_dec);
+    Serial.print(amplitude);
+    Serial.print(" maxamplitude:");
+    Serial.println(maxamplitude);
 
     if(diff_lt(maxamplitude, reported_maxamplitude, 0.1)) force_report = true;
-    if(diff_lt(maxamplitude, reported_maxamplitude, 0.5)) alarm_report = true;
+    if(diff_lt(maxamplitude, bkground_level, 1.0)) alarm_report = true;
     now = millis();
     if(now-last_report >= 100 || force_report || alarm_report)
     {
