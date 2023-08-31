@@ -1,4 +1,4 @@
-# seismic data collection system via single pair ethernet
+# Seismic data collection via single pair ethernet
 
 ## Introduction
 
@@ -28,11 +28,11 @@ Another advantage, not really relevant here but worth noting, is the cable weigh
 
 Finally, and though it is not implemented in the function board provided by sparkfun (actually not implemented in the ADIN1110 itself) is the possibility to power the remote sensor via the SPE cable, similar to PoE. This is much relevant in such a seismic system since the sensor can be located way down in a basement or even in holes in the ground where regular electrical power could be difficult to install, and no renewable power could provide energy to the MCU+sensor.
 
-# system
+## System
 
 The whole system was built around components and modules from Sparkfun. The SPE kit was graciously provided by Sparkfun to participants to the challenge.
 
-## components used
+### components used
 
 - [SparkX Qwiic PT100](https://www.sparkfun.com/products/retired/16770)
 , based on the ADS122C04 24-bit ADC from TI.
@@ -40,9 +40,9 @@ The whole system was built around components and modules from Sparkfun. The SPE 
 - [SM-24 geophone](https://www.sparkfun.com/products/11744)
 - [SparkFun MicroMod Artemis Processor](https://www.sparkfun.com/products/16401)
 - [SparkFun MicroMod Single Pair Ethernet Kit](https://www.sparkfun.com/products/retired/19628)
+- LCD 
 
-
-## geophone tests
+### geophone tests
 
 The code used to test the geophone signal is in the GeophoneADC_test directory.
 It is largely based on the [sparkfun library](https://github.com/sparkfun/SparkFun_ADS122C04_ADC_Arduino_Library) for the SparkX Qwicc PT100 board.
@@ -54,17 +54,27 @@ The triggering signal consisted in:
 - sample indexes 271-618: coming back with light steps
 - sample indexes 619-end: moving the surface of the table (that is, exerting an up and down force at a slow pace, as if lifting the desk, but not hitting it)
 
-[!geo_signal](img/geophonesig.png)
+![geo_signal](img/geophonesig.png)
 
-## Tremor detection
+### Tremor detection
 
 The lack of long (>10m) SPE cable and the absence of significant seismic activity since the beginning of the SPE design challenge in my area make that the system remains a proof of concept.
 
 As it is, it detects tremors or shocks of an amplitude larger than an arbitrary threshold, and sends the corresponding amplitude (in milli volts) to the receiving part of the SPE system. 
 A message is displayed on the LCD. 
 
+The whole system in an autonomous (battery powered) configuration is shown on the photo below.
 
-# References
+![whole_system](img/system_overview_battery_powered.jpg)
+
+The transmitting part, with the geophone, ADC and SPE function board on a micromod single board (with artemis MCU):
+![Tx](img/Tx.jpg)
+
+And this is the receiving section, with the LCD, connected to the receiving SPE function board on a micromod single board (with artemis MCU):
+![Rx](img/Rx.jpg)
+
+
+## References
 
 The following references were used or planned to be used.
 
@@ -82,5 +92,4 @@ https://learn.sparkfun.com/tutorials/micromod-artemis-processor-board-hookup-gui
 
 
 
-![image info](./img/16770-Qwiic_Instrument_ADC_-_PT100-01.jpg)
 
