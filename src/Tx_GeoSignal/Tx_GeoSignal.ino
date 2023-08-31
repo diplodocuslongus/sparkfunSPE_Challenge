@@ -1,5 +1,27 @@
 /*
- *---------------------------------------------------------------------------
+ * This code borrows from the following libraries:
+ * https://github.com/sparkfun/SparkFun_ADS122C04_ADC_Arduino_Library
+ * https://github.com/sparkfun/SparkFun_ADIN1110_Arduino_Library
+ * https://github.com/sparkfun/Arduino_Apollo3 
+ * 
+ * The licenses were retained, if any license infringement occured kindly leave a message to the owner of this git repository (diplodocuslongus).
+ */ 
+/*
+The MIT License (MIT)
+
+Copyright (c) 2020 SparkFun Electronics
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Analog Devices, firmware and software is subject to software license agreement. See SLA pdf included with this repo. License terms outlines in: 2021-05-20-LWSCADIN1110 Click Thru SLA .pdf
+
+
+*/
+/*---------------------------------------------------------------------------
  *
  * Copyright (c) 2020, 2021 Analog Devices, Inc. All Rights Reserved.
  * This software is proprietary to Analog Devices, Inc.
@@ -33,7 +55,6 @@ SFE_ADS122C04 geoADC;
 #define MAC_ADDR_1_4        (0xDA)
 #define MAC_ADDR_1_5        (0xCA)
 
-
 uint8_t macAddr[2][6] = {
     {MAC_ADDR_0_0, MAC_ADDR_0_1, MAC_ADDR_0_2, MAC_ADDR_0_3, MAC_ADDR_0_4, MAC_ADDR_0_5},
     {MAC_ADDR_1_0, MAC_ADDR_1_1, MAC_ADDR_1_2, MAC_ADDR_1_3, MAC_ADDR_1_4, MAC_ADDR_1_5},
@@ -64,9 +85,7 @@ bool txBufAvailable[BUFF_DESC_COUNT];
 /* geophone signal parameters */
 float maxamplitude = 0.0; // max wave amplitude, as voltage from ADC
 float reported_maxamplitude = 0.0; // max amplitude of vibration/wave/shock
-float reported_wvfreq;
-float reported_alt;
-float reported_temp;
+float reported_wvfreq; // for future use (wave frequency)
 unsigned long last_report;
 unsigned long last_toggle;
 uint8_t sample_data_num = 0;
@@ -161,25 +180,26 @@ void setup()
     geoADC.enableDebugging(Serial); //Enable debug messages on Serial
     geoADC.printADS122C04config(); //Print the configuration
     geoADC.disableDebugging(); //Enable debug messages on Serial
-    adi_eth_Result_e result;
+    adi_eth_Result_e resultSPE;
   
-    Serial.println(F("ADC set successfully"));
+    Serial.println(F("ADC successfully set"));
+
     /****** System Init *****/
-    result = adin1110.begin();
-    if(result != ADI_ETH_SUCCESS) Serial.println("No MACPHY device found");
+    resultSPE = adin1110.begin();
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("No MACPHY device found");
     else Serial.println("Adin1110 for Tx found!");
 
-    result = adin1110.addAddressFilter(&macAddr[0][0], NULL, 0);
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
+    resultSPE = adin1110.addAddressFilter(&macAddr[0][0], NULL, 0);
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
 
-    result = adin1110.addAddressFilter(&macAddr[1][0], NULL, 0);
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
+    resultSPE = adin1110.addAddressFilter(&macAddr[1][0], NULL, 0);
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_AddAddressFilter");
 
-    result = adin1110.syncConfig();
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_SyncConfig");
+    resultSPE = adin1110.syncConfig();
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_SyncConfig");
 
-    result = adin1110.registerCallback(cbLinkChange, ADI_MAC_EVT_LINK_CHANGE);
-    if(result != ADI_ETH_SUCCESS) Serial.println("adin1110_RegisterCallback (ADI_MAC_EVT_LINK_CHANGE)");
+    resultSPE = adin1110.registerCallback(cbLinkChange, ADI_MAC_EVT_LINK_CHANGE);
+    if(resultSPE != ADI_ETH_SUCCESS) Serial.println("adin1110_RegisterCallback (ADI_MAC_EVT_LINK_CHANGE)");
 
     /* Prepare Tx/Rx buffers */
     for (uint32_t i = 0; i < BUFF_DESC_COUNT; i++)
@@ -191,11 +211,11 @@ void setup()
         rxBufDesc[i].bufSize = MAX_FRAME_BUF_SIZE;
         rxBufDesc[i].cbFunc = rxCallback;
         
-        result = adin1110.submitRxBuffer(&rxBufDesc[i]);
+        resultSPE = adin1110.submitRxBuffer(&rxBufDesc[i]);
     }
 
-    result = adin1110.enable();
-    DEBUG_RESULT("Device enable error", result, ADI_ETH_SUCCESS);
+    resultSPE = adin1110.enable();
+    DEBUG_RESULT("Device enable error", resultSPE, ADI_ETH_SUCCESS);
 
     /* Wait for link to be established */
     Serial.print("Device Configured, waiting for connection...");
@@ -266,18 +286,14 @@ void loop() {
     }
         
     Serial.println(volts_1, 7);
-    //delay(250); //Don't pound the I2C bus too hard
-    
     delay(10);
-    adi_eth_Result_e        result;
+    adi_eth_Result_e        resultSPE;
     unsigned long now;
     bool force_report = false;
+    bool alarm_report = false;
 
     float amplitude = volts_1;
-    //float maxamplitude = (float)random(30); // 
-    float wvfreq = (float)random(20); // 
-    float alt = (float)random(10); // 
-    float temp = (float)random(40); // 
+    float wvfreq = (float)random(20); // for test Tx/Rx functionality
     int maxamplitude_dec = ( (int)((abs)(maxamplitude)*100) ) % 100;
     int amplitude_dec = ( (int)((abs)(amplitude)*100) ) % 100;
     int wvfreq_dec = ( (int)(wvfreq*100) ) % 100;
@@ -286,26 +302,40 @@ void loop() {
     Serial.println(amplitude_dec);
 
     if(diff_lt(maxamplitude, reported_maxamplitude, 0.1)) force_report = true;
+    if(diff_lt(maxamplitude, reported_maxamplitude, 0.5)) alarm_report = true;
     now = millis();
-    if(now-last_report >= 5000 || force_report)
+    if(now-last_report >= 100 || force_report || alarm_report)
     {
-        Serial.print("maxamplitude: ");
-        Serial.println(maxamplitude);
-        delay(100); // for test, TODO remove
-      if (txBufAvailable[txBuffidx] && linkStatus == ADI_ETH_LINK_STATUS_UP)
-      {
         char output_string[MAX_FRAME_BUF_SIZE];
         uint16_t dataLength;
                  
         //sprintf(output_string, "Amp:%d.%03d",(int)amplitude, amplitude_dec);
-        sprintf(output_string, "Amp:%d.%03d",(int)maxamplitude, maxamplitude_dec);
-        //sprintf(output_string, "Amp:%d.%01dFr:%d\r\nAlt:%d.%01dT:%d.%01d",(int)maxamplitude, maxamplitude_dec, (int)wvfreq, (int)alt, alt_dec, (int)temp, temp_dec);
-//        sprintf(output_string, "MaxAmplitude: %d.%02d\r\nWaveFreq: %d\r\nAlt: %d.%02d\r\nTemp: %d.%02d", (int)maxamplitude, maxamplitude_dec, (int)wvfreq, (int)alt, alt_dec, (int)temp, temp_dec);
-
-        reported_maxamplitude = maxamplitude;
-        reported_wvfreq = wvfreq;
-        reported_alt = alt;
-        reported_temp = temp;
+        if (alarm_report)
+        {
+            sprintf(output_string, "ALARM! ALARM!");
+            Serial.print("ALARM ");
+        }
+        else
+        {
+            //sprintf(output_string, "Amp:%d.%03d",(int)amplitude, amplitude_dec);
+            sprintf(output_string, "Max Amp:%d.%03d",(int)maxamplitude, maxamplitude_dec);
+            reported_maxamplitude = maxamplitude;
+            reported_wvfreq = wvfreq;
+        }
+        Serial.print("maxamplitude: ");
+        Serial.println(maxamplitude);
+        //delay(100); // for test, remove
+      if (txBufAvailable[txBuffidx] && linkStatus == ADI_ETH_LINK_STATUS_UP)
+      {
+        /*
+        char output_string[MAX_FRAME_BUF_SIZE];
+        uint16_t dataLength;
+                 
+        //sprintf(output_string, "Amp:%d.%03d",(int)amplitude, amplitude_dec);
+        sprintf(output_string, "Max Amp:%d.%03d",(int)maxamplitude, maxamplitude_dec);
+        */
+        //reported_maxamplitude = maxamplitude;
+        //reported_wvfreq = wvfreq;
         last_report = now;
         dataLength = strnlen(output_string, MAX_FRAME_BUF_SIZE);
         output_string[dataLength++] = '\0';
@@ -321,8 +351,8 @@ void loop() {
 
         txBufAvailable[txBuffidx] = false;
 
-        result = adin1110.submitTxBuffer(&txBufDesc[txBuffidx]);
-        if (result == ADI_ETH_SUCCESS)
+        resultSPE = adin1110.submitTxBuffer(&txBufDesc[txBuffidx]);
+        if (resultSPE == ADI_ETH_SUCCESS)
         {
             txBuffidx = (txBuffidx + 1) % BUFF_DESC_COUNT;
         }
@@ -352,4 +382,3 @@ void loop() {
     
     delay(100);
 }
-

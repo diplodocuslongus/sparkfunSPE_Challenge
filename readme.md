@@ -39,8 +39,8 @@ The whole system was built around components and modules from Sparkfun. The SPE 
 - 3 1kOhm resistors
 - [SM-24 geophone](https://www.sparkfun.com/products/11744)
 - [SparkFun MicroMod Artemis Processor](https://www.sparkfun.com/products/16401)
-- [SparkFun MicroMod Single Pair Ethernet Kit](https://www.sparkfun.com/products/retired/19628)
-- LCD 
+- [SparkFun MicroMod Single Pair Ethernet Kit](https://www.sparkfun.com/products/retired/19628), the ESP32 MCU provided in the kit was replaced with an Artemis MCU.
+- [SparkFun 16x2 SerLCD - RGB Backlight (Qwiic)](https://www.sparkfun.com/products/16396) 
 
 ### geophone tests
 
@@ -56,7 +56,14 @@ The triggering signal consisted in:
 
 ![geo_signal](img/geophonesig.png)
 
-### Tremor detection
+
+## Tremor detection
+
+### Code
+
+Code is provided in Tx_Geosignal.ino and Rx_Geosignal.ino.
+
+### Tests
 
 The lack of long (>10m) SPE cable and the absence of significant seismic activity since the beginning of the SPE design challenge in my area make that the system remains a proof of concept.
 
@@ -89,7 +96,4 @@ https://github.com/Protocentral/Protocentral_ADS1220/issues/9
 https://forum.arduino.cc/t/arduino-geophone-application/182534/5
 https://cdn.sparkfun.com/assets/7/4/e/1/4/ads122c04_datasheet.pdf
 https://learn.sparkfun.com/tutorials/micromod-artemis-processor-board-hookup-guide
-
-
-
 

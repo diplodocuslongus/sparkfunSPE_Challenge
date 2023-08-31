@@ -1,3 +1,35 @@
+/*
+ * This code borrows from the following libraries:
+ * https://github.com/sparkfun/SparkFun_ADS122C04_ADC_Arduino_Library
+ * https://github.com/sparkfun/SparkFun_ADIN1110_Arduino_Library
+ * https://github.com/sparkfun/SparkFun_SerLCD_Arduino_Library
+ * https://github.com/sparkfun/Arduino_Apollo3 
+ * The licenses were retained, if any license infringement occured kindly leave a message to the owner of this git repository (diplodocuslongus).
+ */ 
+/*
+The MIT License (MIT)
+
+Copyright (c) 2020 SparkFun Electronics
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Analog Devices, firmware and software is subject to software license agreement. See SLA pdf included with this repo. License terms outlines in: 2021-05-20-LWSCADIN1110 Click Thru SLA .pdf
+
+
+*/
+/*---------------------------------------------------------------------------
+ *
+ * Copyright (c) 2020, 2021 Analog Devices, Inc. All Rights Reserved.
+ * This software is proprietary to Analog Devices, Inc.
+ * and its licensors.By using this software you agree to the terms of the
+ * associated Analog Devices Software License Agreement.
+ *
+ *---------------------------------------------------------------------------
+ */
 //
 #include "sfe_spe_advanced.h"
 #include <Wire.h>
